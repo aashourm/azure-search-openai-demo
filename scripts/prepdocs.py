@@ -172,8 +172,12 @@ def get_document_text(filename):
             credential=formrecognizer_creds,
             headers={"x-ms-useragent": "azure-search-chat-demo/1.0.0"},
         )
-        with open(filename, "rb") as f:
-            poller = form_recognizer_client.begin_analyze_document("prebuilt-layout", document=f)
+        if filename.split(".")[-1] == 'pdf':
+            with open(filename, "rb") as f:
+                poller = form_recognizer_client.begin_analyze_document("prebuilt-layout", document=f)
+        elif filename.split(".")[-1] == 'html':
+            with open(filename, "rb") as f:
+                poller = form_recognizer_client.begin_analyze_document("prebuilt-read", document=f)
         form_recognizer_results = poller.result()
 
         for page_num, page in enumerate(form_recognizer_results.pages):
@@ -296,8 +300,10 @@ def create_sections(
 ):
     file_id = filename_to_id(filename)
     for i, (content, pagenum) in enumerate(split_text(page_map, filename)):
+        incidentid = filename.split(".")[0]
         section = {
             "id": f"{file_id}-page-{i}",
+            "incidentId": f"{incidentid}",
             "content": content,
             "category": args.category,
             "sourcepage": blob_name_from_file_page(filename, pagenum),
@@ -346,6 +352,7 @@ def create_search_index():
     )
     fields = [
         SimpleField(name="id", type="Edm.String", key=True),
+        SimpleField(name="incidentId", type="Edm.String", filterable=True, facetable=True),
         SearchableField(name="content", type="Edm.String", analyzer_name=args.searchanalyzername),
         SearchField(
             name="embedding",

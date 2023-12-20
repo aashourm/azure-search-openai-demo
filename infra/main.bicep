@@ -10,8 +10,8 @@ param environmentName string
 param location string
 
 param appServicePlanName string = ''
-param backendServiceName string = ''
-param resourceGroupName string = ''
+param backendServiceName string = 'AI-TSG-App-Test'
+param resourceGroupName string = 'AI-TSG-Test'
 
 param applicationInsightsName string = ''
 
